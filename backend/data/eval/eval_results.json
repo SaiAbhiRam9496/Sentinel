@@ -1,0 +1,59 @@
+{
+  "model": "IsolationForest",
+  "n_estimators": 100,
+  "contamination": 0.1,
+  "feature_set": [
+    "soc_change",
+    "energy_consumed_kwh",
+    "charging_duration_hours",
+    "observed_charging_rate_kw",
+    "energy_per_battery_pct",
+    "hour_of_day",
+    "charger_type_encoded",
+    "vehicle_age_years",
+    "temperature_c",
+    "distance_km"
+  ],
+  "evaluation_dataset_size": 185,
+  "actual_normals": 150,
+  "actual_anomalies": 35,
+  "metrics": {
+    "precision": 0.7174,
+    "recall": 0.9429,
+    "f1_score": 0.8148,
+    "accuracy": 0.9189
+  },
+  "confusion_matrix": {
+    "true_positives": 33,
+    "false_positives": 13,
+    "true_negatives": 137,
+    "false_negatives": 2
+  },
+  "per_category_performance": {
+    "power_surge_implausible_rate": {
+      "total_injected": 8,
+      "detected": 8,
+      "recall": 1.0
+    },
+    "inverted_soc_drain": {
+      "total_injected": 8,
+      "detected": 6,
+      "recall": 0.75
+    },
+    "stalled_phantom_session": {
+      "total_injected": 6,
+      "detected": 6,
+      "recall": 1.0
+    },
+    "energy_exceeds_capacity": {
+      "total_injected": 8,
+      "detected": 8,
+      "recall": 1.0
+    },
+    "extreme_temperature_telemetry": {
+      "total_injected": 5,
+      "detected": 5,
+      "recall": 1.0
+    }
+  }
+}
