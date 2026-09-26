@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse, StreamingResponse
+from sqlalchemy.orm import Session
 import pandas as pd
 from io import StringIO
 
@@ -65,3 +66,34 @@ def download_report(dataset_id: str, db: Session = Depends(get_db)):
     markdown = "\n\n".join(md_parts)
     stream = StringIO(markdown)
     return StreamingResponse(iter([stream.getvalue()]), media_type="text/markdown", headers={"Content-Disposition": f"attachment; filename=report_{dataset_id}.md"})
+
+
+@router.get("/{dataset_id}/data-dictionary", response_model=dict)
+def get_data_dictionary(dataset_id: str, db: Session = Depends(get_db)):
+    """Generate a plain-language data dictionary for each column."""
+    ds = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if not ds:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dataset not found")
+    df = _load_dataframe(ds)
+    dictionary = {}
+    for col in df.columns:
+        series = df[col]
+        missing = int(series.isna().sum())
+        total = len(series)
+        unique = int(series.nunique(dropna=True))
+        if pd.api.types.is_numeric_dtype(series):
+            col_type = "numeric"
+            description = (
+                f"Numeric column with {unique} unique values. "
+                f"Range: {round(series.min(), 2)} – {round(series.max(), 2)}. "
+                f"Mean: {round(series.mean(), 2)}. Missing: {missing}/{total}."
+            )
+        else:
+            col_type = "categorical / text"
+            top = series.mode().iloc[0] if not series.mode().empty else "N/A"
+            description = (
+                f"Categorical/text column with {unique} unique values. "
+                f"Most common value: '{top}'. Missing: {missing}/{total}."
+            )
+        dictionary[col] = {"type": col_type, "description": description, "missing": missing, "unique": unique}
+    return {"dataset_id": dataset_id, "data_dictionary": dictionary}
