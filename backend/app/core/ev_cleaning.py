@@ -53,7 +53,7 @@ def impute_numeric_ev(df: pd.DataFrame, dataset_id: str, db: Session) -> pd.Data
         if df[col].isna().any():
             median_val = df[col].median()
             imputed_rows = df[df[col].isna()].index.tolist()
-            df[col].fillna(median_val, inplace=True)
+            df[col] = df[col].fillna(median_val)
             _log(db, dataset_id, "impute", {
                 "column": col,
                 "rows": imputed_rows,

@@ -75,7 +75,7 @@ def handle_missing_values(df: pd.DataFrame, dataset_id: str, db: Session) -> pd.
         if df[col].isna().any():
             median_val = df[col].median()
             imputed_rows = df[df[col].isna()].index.tolist()
-            df[col].fillna(median_val, inplace=True)
+            df[col] = df[col].fillna(median_val)
             log = CleaningLog(
                 dataset_id=dataset_id,
                 action="impute",

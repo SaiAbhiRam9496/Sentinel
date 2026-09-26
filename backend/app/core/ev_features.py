@@ -114,6 +114,6 @@ def engineer_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     for col in FEATURE_COLUMNS:
         if feature_df[col].isna().any():
             median = feature_df[col].median()
-            feature_df[col].fillna(median if pd.notna(median) else 0.0, inplace=True)
+            feature_df[col] = feature_df[col].fillna(median if pd.notna(median) else 0.0)
 
     return feat, feature_df

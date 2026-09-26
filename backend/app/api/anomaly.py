@@ -7,6 +7,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import os
+import pandas as pd
 
 from backend.app.db.session import get_db
 from backend.app.db.models import Dataset
@@ -50,10 +51,8 @@ def predict_anomalies_endpoint(dataset_id: str, db: Session = Depends(get_db)):
     Returns a list of rows flagged as anomalies with their scores.
     """
     ds = _load_dataset(dataset_id, db)
-    model_path = os.path.join(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "models", "anomaly")),
-        f"{dataset_id}_iforest.pkl",
-    )
+    from backend.app.core.anomaly import MODEL_ROOT
+    model_path = str(MODEL_ROOT / f"{dataset_id}_iforest.pkl")
     if not os.path.exists(model_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Model not trained for this dataset.")
     try:

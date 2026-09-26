@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import pandas as pd
 
 from backend.app.db.session import get_db
-from backend.app.db.models import Dataset
+from backend.app.db.models import Dataset, CleaningLog
 from backend.app.core.quality import (
     compute_profile,
     detect_duplicates,
@@ -65,3 +65,20 @@ def get_quality_score(dataset_id: str, db: Session = Depends(get_db)):
     suspicious = detect_suspicious(df, dataset_id, db)
     score = compute_quality_score(df, dup_info, suspicious)
     return {"dataset_id": dataset_id, "quality_score": score}
+
+
+@router.get("/{dataset_id}/cleaning-log", response_model=dict)
+def get_cleaning_log(dataset_id: str, db: Session = Depends(get_db)):
+    """Return the full cleaning/transparency log for a dataset.
+    Shows every drop, impute, and suspicious-flag action with reasons.
+    """
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if not dataset:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dataset not found")
+    logs = (
+        db.query(CleaningLog)
+        .filter(CleaningLog.dataset_id == dataset_id)
+        .order_by(CleaningLog.created_at.asc())
+        .all()
+    )
+    return {"dataset_id": dataset_id, "log": [l.to_dict() for l in logs]}
