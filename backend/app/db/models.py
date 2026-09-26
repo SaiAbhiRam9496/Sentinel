@@ -36,3 +36,22 @@ class Dataset(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
+
+
+class CleaningLog(Base):
+    __tablename__ = "cleaning_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    dataset_id = Column(String(36), nullable=False)
+    action = Column(String(50), nullable=False)  # e.g., 'drop', 'impute', 'duplicate_remove', 'suspicious_flag'
+    details = Column(JSON, nullable=True)  # free-form details like columns affected, rows count, reason
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "dataset_id": self.dataset_id,
+            "action": self.action,
+            "details": self.details,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
